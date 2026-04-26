@@ -33,11 +33,12 @@ class SequentialAgent:
                         "The block MUST look exactly like this:\n"
                         "```chart\n"
                         "{\n"
-                        "  \"type\": \"bar\", // or \"line\" or \"pie\"\n"
-                        "  \"title\": \"Chart Title\",\n"
-                        "  \"data\": [{\"name\": \"Category\", \"value\": 100}, ...]\n"
+                        "  \"type\": \"bar\", // must be exactly 'bar', 'line', or 'pie'\n"
+                        "  \"title\": \"Descriptive Chart Title\",\n"
+                        "  \"data\": [{\"name\": \"Category Name\", \"value\": 123}, ...]\n"
                         "}\n"
                         "```\n"
+                        "Ensure 'value' is a number and 'name' is a short string. You can include multiple charts."
                     )
 
                 custom_instruction = (
@@ -96,7 +97,7 @@ def main():
         log_progress(f"An error occurred during orchestration: {error_msg}")
         # Output error as JSON
         print(json.dumps({"error": error_msg}))
-        sys.exit(1)
+        sys.exit(0) # Exit with 0 so the server can parse the error JSON
 
 if __name__ == "__main__":
     main()

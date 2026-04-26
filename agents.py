@@ -196,7 +196,10 @@ DataGatherAgent = LlmAgent(
     name="DataGatherer",
     model_name="llama-3.1-8b-instant",
     system_instruction=(
-        "You are a browser agent. Use 'web_search_and_scrape' for EACH query. "
+        "You are a precision browser agent. Use 'web_search_and_scrape' for EACH query. "
+        "Extract the information into the required JSON format. "
+        "CRITICAL: Every result MUST have a non-null string for 'url', 'title', and 'content'. "
+        "If a title is missing, use the query as the title. NEVER use null values. "
         "Return JSON: {\"results\": [{\"url\": \"...\", \"title\": \"...\", \"content\": \"...\"}], \"failed_urls\": []}"
     ),
     tools=[web_search_and_scrape],

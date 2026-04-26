@@ -62,19 +62,28 @@ const ChartRenderer = ({ value, isPrint = false }) => {
 
   const { type, title, data: chartData } = data;
 
-  const renderChart = (w, h) => {
+  const renderChart = (isPrintMode = false, w, h) => {
     const isPie = type === 'pie';
     const ChartComponent = type === 'bar' ? ReBarChart : type === 'line' ? ReLineChart : RePieChart;
     
-    // Ensure we have measurable dimensions to avoid -1 warnings
-    const width = w || "100%";
-    const height = h || "100%";
-    
-    // Safety check: if width/height are effectively 0 or less during initialization
-    if (w <= 0 || h <= 0) return null;
-    
+    // Safety check for dimensions if provided
+    if (w !== undefined && w <= 0) return null;
+    if (h !== undefined && h <= 0) return null;
+
+    // Use provided dimensions (from ResponsiveContainer) or fixed ones (for print)
+    const props = {};
+    if (w) props.width = w;
+    if (h) props.height = h;
+    if (isPrintMode) {
+      props.width = 650;
+      props.height = 350;
+    }
+
+    // Don't render if we have no width/height yet and not in print
+    if (!isPrintMode && !w) return null;
+
     return (
-      <ChartComponent data={chartData} width={width} height={height} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+      <ChartComponent data={chartData} {...props} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
         <defs>
           <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#6366f1" stopOpacity={1}/>
@@ -109,7 +118,7 @@ const ChartRenderer = ({ value, isPrint = false }) => {
       <div className="my-10 p-8 border-2 border-slate-100 rounded-3xl page-break-inside-avoid bg-white">
         <h4 className="text-center text-xs font-black uppercase tracking-widest text-slate-400 mb-6">{title || 'Data Visualization'}</h4>
         <div className="flex justify-center overflow-hidden">
-          {renderChart(650, 350)}
+          {renderChart(true)}
         </div>
       </div>
     );
@@ -128,10 +137,51 @@ const ChartRenderer = ({ value, isPrint = false }) => {
       </div>
       <div className="w-full h-[350px] min-h-[350px] relative">
         <ResponsiveContainer width="100%" height="100%">
-          {renderChart(undefined, undefined)}
+          {/* Recharts expects direct children or a functional child in some versions, but 3.x works best with this: */}
+          <ChartComponentWrapper type={type} chartData={chartData} isPrint={isPrint} title={title} />
         </ResponsiveContainer>
       </div>
     </motion.div>
+  );
+};
+
+// Recharts ResponsiveContainer works by cloning its children and passing width/height.
+// We must ensure the component correctly receives these injected props.
+const ChartComponentWrapper = ({ width, height, type, chartData, isPrint, title }) => {
+  const isPie = type === 'pie';
+  const ChartComponent = type === 'bar' ? ReBarChart : type === 'line' ? ReLineChart : RePieChart;
+  
+  // ResponsiveContainer sometimes passes 0 or -1 initially
+  if (!width || width <= 0 || !height || height <= 0) return <div style={{width: '100%', height: '100%'}} />;
+
+  return (
+    <ChartComponent data={chartData} width={width} height={height} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+      <defs>
+        <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#6366f1" stopOpacity={1}/>
+          <stop offset="100%" stopColor="#a855f7" stopOpacity={0.8}/>
+        </linearGradient>
+        <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#6366f1" />
+          <stop offset="100%" stopColor="#ec4899" />
+        </linearGradient>
+      </defs>
+      {!isPie && <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />}
+      {!isPie && <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 10, fontWeight: 'bold'}} dy={10} />}
+      {!isPie && <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10}} />}
+      <Tooltip 
+        contentStyle={{ borderRadius: '1.25rem', border: 'none', boxShadow: '0 25px 50px -12px rgb(0 0 0 / 0.15)', padding: '12px' }}
+        cursor={{ fill: '#f1f5f9', radius: 8 }}
+      />
+      {type === 'bar' && <Bar dataKey="value" fill="url(#barGradient)" radius={[10, 10, 0, 0]} animationDuration={2000} />}
+      {type === 'line' && <Line type="monotone" dataKey="value" stroke="url(#lineGradient)" strokeWidth={5} dot={{ r: 8, fill: '#6366f1', strokeWidth: 3, stroke: '#fff' }} activeDot={{ r: 10, strokeWidth: 0 }} animationDuration={2000} />}
+      {isPie && (
+        <Pie data={chartData} cx="50%" cy="50%" innerRadius={80} outerRadius={110} paddingAngle={8} dataKey="value" animationDuration={1500} stroke="none">
+          {chartData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} cornerRadius={10} />)}
+        </Pie>
+      )}
+      {isPie && <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '10px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em', paddingTop: '30px' }} />}
+    </ChartComponent>
   );
 };
 
