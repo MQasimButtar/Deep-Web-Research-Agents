@@ -1,0 +1,6 @@
+pydantic
+httpx
+beautifulsoup4
+duckduckgo_search
+google-genai
+python-dotenv

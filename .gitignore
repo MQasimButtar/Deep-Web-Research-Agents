@@ -1,0 +1,58 @@
+# Sensitive Information
+.env
+.env.local
+.env.*.local
+*.log
+
+# Dependencies
+node_modules/
+jspm_packages/
+venv/
+.venv/
+env/
+ENV/
+bin/
+include/
+lib/
+share/
+
+# Build and Distribution
+dist/
+build/
+out/
+.next/
+.vite/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Python Artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.tox/
+
+# IDE & Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Project Specific
+client/node_modules/
+server/node_modules/
+test_img.py
+test_wiki_img.py
+debug_images.py
